@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock title %}</title>
+    <link rel="stylesheet" href="{% static 'index.css' %}">
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+</head>
+<body>
+    {% block content %}
+    {% if user.is_authenticated %}
+        <div class="a1">
+            <h1 class="a2">Credit office</h1>
+            <a href="{% url 'logout' %}"><h3 class="a3">Logout</h3></a> 
+            <a href="{% url 'password_change' %}">Smenit parol</a> <br>
+
+
+            
+        </div>
+
+<div class="a5">
+    <div class="a8">
+        <h1 class="qw">Credit office</h1>
+        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Veniam rerum aspernatur minus consequuntur Lorem ipsum dolor sit amet consectetur adipisicing elit. Modi nesciunt eveniet ea doloremque earum at cumque ullam ex tempora voluptatum. Consectetur, vero? Eligendi, voluptate minima similique porro fugit voluptatibus quaerat....</p>
+    </div>
+</div>
+
+<div class="aa1">
+    <h1 class="aa2">Very good</h1>
+</div>
+{% else %}
+<h1>Shumo login nakarded</h1>
+<p>You can <a href="{% url 'login' %}" class="btn btn-primary btn-lg">log in again\</a>.</p>
+
+        {% endif %}
+{% endblock content %}
+</body>
+</html>

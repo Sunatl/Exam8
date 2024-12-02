@@ -9,6 +9,8 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username
+    
+    
 class Author(models.Model):
     name = models.CharField(max_length=255)
     biography = models.TextField(null=True, blank=True)

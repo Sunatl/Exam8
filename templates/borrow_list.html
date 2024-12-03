@@ -20,8 +20,8 @@
                     <div class="borrow-card">
                         <div class="borrow-info">
                             <h3><a href="{% url 'borrow-update' borrow.pk %}">{{ borrow.book.title }}</a></h3>
-                            <p>Due Date: {{ borrow.due_date }}</p>
-                            <p>Status: {% if borrow.returned %}Returned{% else %}Not Returned{% endif %}</p>
+                            <p>Due Date: {{ borrow.borrow_date }}</p>
+                            <p>Status: {% if borrow.is_returned %}Returned{% else %}Not Returned{% endif %}</p>
                             <a href="{% url 'borrow-delete' borrow.pk %}" class="btn btn-danger">Delete</a>
 
                         </div>

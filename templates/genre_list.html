@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}Genres List{% endblock %}
+
+{% block content %}
+    <section class="genre-list">
+        <div class="container">
+            <h2 class="section-title">Genres                                                                                           <a href="{% url 'base' %}" class="btn btn-danger">Home</a>  <a href="{% url 'genre-create' %}" class="btn btn-danger">Add</a></h2>
+
+            <div class="search-bar">
+                <form method="get">
+                    <input type="text" name="search" placeholder="Search for genres..." value="{{ request.GET.search }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+            </div>
+
+            <div class="genres">
+                {% for genre in genres %}
+                    <div class="genre-card">
+                        <div class="genre-info">
+                            <h3><a href="{% url 'genre-detail' genre.pk %}">{{ genre.name }}</a></h3>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No genres found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

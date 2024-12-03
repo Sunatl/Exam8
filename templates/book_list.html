@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Books List{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'borrow.css' %}">
+
+    <section class="book-list">
+        <div class="container">
+            <h2 class="section-title">Books                                                                                           <a href="{% url 'base' %}" class="btn btn-danger">Home</a>  <a href="{% url 'book-create' %}" class="btn btn-danger">Add</a></h2>
+
+            <div class="search-bar">
+                <form method="get">
+                    <input type="text" name="search" placeholder="Search for books..." value="{{ request.GET.search }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+            </div>
+
+            <div class="books">
+                {% for book in books %}
+                    <div class="book-card">
+                        <div class="book-info">
+                            <h3><a href="{% url 'book-detail' book.pk %}">{{ book.title }}</a></h3>
+                            <p>by {{ book.author.name }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No books found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

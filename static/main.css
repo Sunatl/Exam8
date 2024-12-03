@@ -181,6 +181,12 @@ input::placeholder, select::placeholder {
     font-size: 14px;
     color: #888;
 }
+.header{
+display: none;
+}
+.sasa{
+    text-decoration: none;
+}
 .doctor-image{
     width: 530px;
     height: 600px;
@@ -208,3 +214,4 @@ input::placeholder, select::placeholder {
         max-width: 100%;
     }
 }
+

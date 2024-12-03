@@ -33,7 +33,6 @@ class Author(models.Model):
             return (now().date() - self.birth_date).days // 365
         return None
 
-    # Функция барои санҷидани, ки муаллиф зинда аст ё на
     def is_alive(self):
         return self.death_date is None
 
@@ -44,7 +43,6 @@ class Genre(models.Model):
     def __str__(self):
         return self.name
 
-    # Функция барои баргардонидани миқдори китобҳои жанр
     def book_count(self):
         return self.books.count()
 
@@ -55,7 +53,7 @@ class Book(models.Model):
     author = models.ForeignKey(Author, on_delete=models.CASCADE, related_name="books")
     genre = models.ManyToManyField(Genre, related_name="books")
     publication_date = models.DateField()
-    cover_image = models.ImageField(upload_to="book_covers/", null=True, blank=True)
+    cover_image = models.ImageField(upload_to="static/images", null=True,blank=True )
     is_available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -84,7 +82,7 @@ class Borrow(models.Model):
 
     # Функция барои санҷидани мӯҳлати бозгашт
     def is_overdue(self):
-        if self.return_date and not self.is_returned:
+        if self.return_date and  self.is_returned:
             return now() > self.return_date
         return False
 

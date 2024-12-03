@@ -11,6 +11,9 @@
     padding: 20px;
     background-color: #f4f7fc;
 }
+.sasa{
+    margin-left: 140px;
+}
 
 /* Full-page background */
 body {
@@ -108,9 +111,6 @@ h1 {
 }
 .doctor-image{
     margin-bottom: 100px;
-}
-.sasa{
-    margin-left: 140px;
 }
 
 img {

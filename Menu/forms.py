@@ -16,6 +16,8 @@ class CustomUserForm(forms.ModelForm):
             user.save()
         return user
     
+    
+
 class AuthorForm(forms.ModelForm):
     class Meta:
         model = Author

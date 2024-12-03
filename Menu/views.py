@@ -8,6 +8,7 @@ from .models import Author, Genre, Book, Borrow, Review
 from .forms import AuthorForm, GenreForm, BookForm, BorrowForm, ReviewForm
 
 # Логикаи логин
+ 
 @login_required
 def user_logout(request):
     logout(request) 

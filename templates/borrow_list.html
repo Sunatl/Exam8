@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}My Borrowed Books{% endblock %}
+
+{% block content %}
+
+    <section class="borrow-list">
+        <div class="container">
+            <h2 class="section-title">My Borrowed Books                                                                                           <a href="{% url 'base' %}" class="btn btn-danger">Home</a>  <a href="{% url 'borrow-create' %}" class="btn btn-danger">Add</a></h2>
+
+            <div class="search-bar">
+                <form method="get">
+                    <input type="text" name="search" placeholder="Search borrowed books..." value="{{ request.GET.search }}">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </form>
+            </div>
+
+            <div class="borrows">
+                {% for borrow in borrows %}
+                    <div class="borrow-card">
+                        <div class="borrow-info">
+                            <h3><a href="{% url 'borrow-update' borrow.pk %}">{{ borrow.book.title }}</a></h3>
+                            <p>Due Date: {{ borrow.due_date }}</p>
+                            <p>Status: {% if borrow.returned %}Returned{% else %}Not Returned{% endif %}</p>
+                            <a href="{% url 'borrow-delete' borrow.pk %}" class="btn btn-danger">Delete</a>
+
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>No borrowed books found.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

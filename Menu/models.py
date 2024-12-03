@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
+from django.utils.timezone import now
+from datetime import timedelta
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
@@ -10,7 +11,11 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
     
-    
+    # Функция барои баргардонидани номи пурраи корбар
+    def get_full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+
 class Author(models.Model):
     name = models.CharField(max_length=255)
     biography = models.TextField(null=True, blank=True)
@@ -20,12 +25,28 @@ class Author(models.Model):
     def __str__(self):
         return self.name
 
+    # Функция барои ҳисоб кардани синни муаллиф
+    def age(self):
+        if self.birth_date:
+            if self.death_date:
+                return (self.death_date - self.birth_date).days // 365
+            return (now().date() - self.birth_date).days // 365
+        return None
+
+    # Функция барои санҷидани, ки муаллиф зинда аст ё на
+    def is_alive(self):
+        return self.death_date is None
+
 
 class Genre(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
+
+    # Функция барои баргардонидани миқдори китобҳои жанр
+    def book_count(self):
+        return self.books.count()
 
 
 class Book(models.Model):
@@ -42,6 +63,14 @@ class Book(models.Model):
     def __str__(self):
         return self.title
 
+    # Функция барои баргардонидани миқдори жанрҳо
+    def genre_list(self):
+        return ", ".join([genre.name for genre in self.genre.all()])
+
+    # Функция барои санҷидани, ки китоб дастрас аст ё не
+    def is_borrowed(self):
+        return not self.is_available
+
 
 class Borrow(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="borrows")
@@ -52,6 +81,18 @@ class Borrow(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.book.title}"
+
+    # Функция барои санҷидани мӯҳлати бозгашт
+    def is_overdue(self):
+        if self.return_date and not self.is_returned:
+            return now() > self.return_date
+        return False
+
+    # Функция барои ҳисоб кардани мӯҳлати қарз
+    def borrowing_period(self):
+        if self.return_date:
+            return (self.return_date - self.borrow_date).days
+        return None
 
 
 class Review(models.Model):
@@ -64,5 +105,6 @@ class Review(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.book.title} ({self.rating}/5)"
 
-
-
+    # Функция барои нишон додани ситораҳо ба таври графикӣ
+    def stars(self):
+        return "★" * self.rating + "☆" * (5 - self.rating)

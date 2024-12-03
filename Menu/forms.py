@@ -15,3 +15,33 @@ class CustomUserForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+    
+class AuthorForm(forms.ModelForm):
+    class Meta:
+        model = Author
+        fields = ['name', 'biography', 'birth_date', 'death_date']
+
+class GenreForm(forms.ModelForm):
+    class Meta:
+        model = Genre
+        fields = ['name']
+
+class BookForm(forms.ModelForm):
+    class Meta:
+        model = Book
+        fields = ['title', 'description', 'author', 'genre', 'publication_date', 'cover_image', 'is_available']
+
+    genre = forms.ModelMultipleChoiceField(
+        queryset=Genre.objects.all(),
+        widget=forms.CheckboxSelectMultiple
+    )
+
+class BorrowForm(forms.ModelForm):
+    class Meta:
+        model = Borrow
+        fields = [ 'book', 'return_date', 'is_returned']
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = [ 'book', 'review_text', 'rating']

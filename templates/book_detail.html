@@ -7,12 +7,44 @@
         <div class="container">
             <div class="book-header">
                 <h1>{{ book.title }}</h1>
-                <p>by {{ book.author.name }}</p>
+                <p>{{ book.is_available }}</p>
                 <p>{{ book.description }}</p>
             </div>
-            <a href="{% url 'book-update' book.pk %}" class="btn btn-primary">Edit</a>
-            <a href="{% url 'book-delete' book.pk %}" class="btn btn-danger">Delete</a>
+            
+            {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                    <a href="{% url 'book-update' book.pk %}" class="btn btn-primary">Edit</a>
+                    <a href="{% url 'book-delete' book.pk %}" class="btn btn-danger">Delete</a>
+                {% endif %}
+            {% endif %}
+            
             <a href="{% url 'base' %}" class="btn btn-danger">Home</a>
+        </div>
+    </section>
+
+    <!-- Students in this grade Section -->
+    <section class="students-in-grade mt-5">
+        <div class="container">
+            {% if book.grade %}
+                <h3>Students in Grade: {{ book.grade.name }}</h3>
+            {% else %}
+                <h3>No grade assigned to this book</h3>
+            {% endif %}
+            
+            {% if students_in_grade %}
+                <ul class="list-group">
+                    {% for student in students_in_grade %}
+                        <li class="list-group-item">
+                            <strong>{{ student.username }}</strong> - {{ student.get_full_name }}
+                        </li>
+                    {% endfor %}
+                </ul>
+                <p class="text-muted mt-3">Total Students: <strong>{{ total_students }}</strong></p>
+            {% else %}
+                <div class="alert alert-info">
+                    No students are in this grade.
+                </div>
+            {% endif %}
         </div>
     </section>
 {% endblock %}

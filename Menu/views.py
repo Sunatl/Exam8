@@ -1,223 +1,325 @@
-from django.shortcuts import render, redirect
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, TemplateView
 from django.urls import reverse_lazy
+from .models import Grade, Wallet, Book, Purchase,CustomUser
+from .forms import GradeForm, WalletForm, BookForm, PurchaseForm
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView, TemplateView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout
+from django.core.exceptions import PermissionDenied
 from django.db.models import Q
-from .models import Author, Genre, Book, Borrow, Review
-from .forms import AuthorForm, GenreForm, BookForm, BorrowForm, ReviewForm
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
-# Логикаи логин
- 
+
+# User logout
 @login_required
 def user_logout(request):
-    logout(request) 
-    return render(request, 'registration/log_out.html') 
+    logout(request)
+    return render(request, 'registration/log_out.html')
 
+
+# Redirect to login page
 def login(request):
     return redirect("accounts/login/")
 
-# Интихоби шаблон барои "Home" ё саҳифаи асосӣ
+
+# Base and Home pages
 class Base(TemplateView):
     template_name = "base.html"
+
+
 class Home(TemplateView):
     template_name = "home.html"
 
-# Base ListView with Search functionality
-class BaseListView(ListView):
-    search_param = "search"
+
+# CRUD for Grade
+class GradeListView(ListView):
+    model = Grade
+    template_name = 'genre_list.html'
+    context_object_name = 'grades'
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        search_query = self.request.GET.get(self.search_param, "")
+        queryset = Grade.objects.all()
+        search_query = self.request.GET.get('search')
         if search_query:
-            queryset = self.apply_search(queryset, search_query)
+            queryset = queryset.filter(
+                Q(name__icontains=search_query) |
+                Q(description__icontains=search_query)
+            )
         return queryset
 
-    def apply_search(self, queryset, search_query):
-        # Дар BaseListView функсияи ҷустуҷӯ танҳо хати умумиро амалӣ мекунад.
-        return queryset  # Бо ҳама амалҳо барои ҷустуҷӯ дар Views-ҳои махсус тартиб дода мешавад
 
-# Author Views
-class AuthorListView(BaseListView):
-    model = Author
-    template_name = 'author_list.html'
-    context_object_name = 'authors'
-
-    def apply_search(self, queryset, search_query):
-        return queryset.filter(Q(name__icontains=search_query) | Q(biography__icontains=search_query))
-
-class AuthorDetailView(DetailView):
-    model = Author
-    template_name = 'author_detail.html'
-    context_object_name = 'author'
-
-class AuthorCreateView(CreateView):
-    model = Author
-    form_class = AuthorForm
-    template_name = 'author_form.html'
-    success_url = reverse_lazy('author-list')
-
-class AuthorUpdateView(UpdateView):
-    model = Author
-    form_class = AuthorForm
-    template_name = 'author_form.html'
-    success_url = reverse_lazy('author-list')
-    
-
-
-class AuthorDeleteView(DeleteView):
-    model = Author
-    template_name = 'author_confirm_delete.html'
-    success_url = reverse_lazy('author-list')
-    
-
-
-# Genre Views
-class GenreListView(BaseListView):
-    model = Genre
-    template_name = 'genre_list.html'
-    context_object_name = 'genres'
-
-    def apply_search(self, queryset, search_query):
-        return queryset.filter(name__icontains=search_query)
-
-class GenreDetailView(DetailView):
-    model = Genre
+class GradeDetailView(DetailView):
+    model = Grade
     template_name = 'genre_detail.html'
-    context_object_name = 'genre'
+    context_object_name = 'grade'
 
-class GenreCreateView(CreateView):
-    model = Genre
-    form_class = GenreForm
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        grade = self.get_object()  # Get the current Grade object
+
+        # Filter students who belong to this grade
+        students = CustomUser.objects.filter(grade=grade)
+
+        # Now, filter Wallet objects for each student using a relationship with CustomUser
+        wallets = Wallet.objects.filter(student__in=students)  # Filter Wallets related to the students
+
+        context['wallets'] = wallets  # Add the Wallets to the context
+        context['students'] = students  # Add the students to the context
+        context['total_students'] = students.count()  # Add the total number of students
+
+        return context
+
+
+
+
+class GradeCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+    model = Grade
+    form_class = GradeForm
     template_name = 'genre_form.html'
-    success_url = reverse_lazy('genre-list')
+    success_url = reverse_lazy('grade-list')
 
-class GenreUpdateView(UpdateView):
-    model = Genre
-    form_class = GenreForm
+    def test_func(self):
+        # Only allow staff members to create grades
+        return self.request.user.is_staff
+
+
+class GradeUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Grade
+    form_class = GradeForm
     template_name = 'genre_form.html'
-    success_url = reverse_lazy('genre-list')
+    success_url = reverse_lazy('grade-list')
 
-class GenreDeleteView(DeleteView):
-    model = Genre
+    def test_func(self):
+        # Only allow staff members to update grades
+        return self.request.user.is_staff
+
+
+class GradeDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Grade
     template_name = 'genre_confirm_delete.html'
-    success_url = reverse_lazy('genre-list')
+    success_url = reverse_lazy('grade-list')
 
-# Book Views
-class BookListView(BaseListView):
+    def test_func(self):
+        # Only allow staff members to delete grades
+        return self.request.user.is_staff
+
+
+# CRUD for Book
+class BookListView(ListView):
     model = Book
     template_name = 'book_list.html'
     context_object_name = 'books'
 
-    def apply_search(self, queryset, search_query):
-        return queryset.filter(
-            Q(title__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(author__name__icontains=search_query)
-        )
+    def get_queryset(self):
+        queryset = Book.objects.all()
+        search_query = self.request.GET.get('search')
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) |
+                Q(description__icontains=search_query)
+            )
+        return queryset
+
 
 class BookDetailView(DetailView):
     model = Book
     template_name = 'book_detail.html'
     context_object_name = 'book'
 
-class BookCreateView(CreateView):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        book = self.get_object()  # Get the current book object
+        
+        grade = book.grade  # Get the grade associated with the current book
+        
+        # Handle the case where grade is None (book might not be assigned to any grade)
+        if grade:
+            students = CustomUser.objects.filter(grade=grade)
+            grade_name = grade.name  # Name of the grade
+        else:
+            students = []  # No students to show
+            grade_name = "No grade assigned"
+        
+        # Get wallet information for each student in the grade (whether they owe money)
+        student_wallets = {student: Wallet.objects.filter(student=student).first() for student in students}
+        
+        # Add the students, wallet information, and other relevant data to the context
+        context['students_in_grade'] = students
+        context['student_wallets'] = student_wallets  # Wallet information for each student
+        context['grade_name'] = grade_name  # Add the grade name to the context
+
+        return context
+
+
+
+
+
+
+class BookCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Book
     form_class = BookForm
     template_name = 'book_form.html'
     success_url = reverse_lazy('book-list')
 
-class BookUpdateView(UpdateView):
+    def test_func(self):
+        # Only allow staff members to create books
+        return self.request.user.is_staff
+
+
+class BookUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Book
     form_class = BookForm
     template_name = 'book_form.html'
     success_url = reverse_lazy('book-list')
 
-class BookDeleteView(DeleteView):
+    def test_func(self):
+        # Only allow staff members to update books
+        return self.request.user.is_staff
+
+
+class BookDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Book
     template_name = 'book_confirm_delete.html'
     success_url = reverse_lazy('book-list')
 
-# Borrow Views
-class BorrowListView(BaseListView):
-    model = Borrow
-    template_name = 'borrow_list.html'
-    context_object_name = 'borrows'
+    def test_func(self):
+        # Only allow staff members to delete books
+        return self.request.user.is_staff
 
-    def get_queryset(self):
-        return Borrow.objects.filter(user=self.request.user)
 
-    def apply_search(self, queryset, search_query):
-        return queryset.filter(
-            Q(book__title__icontains=search_query)
-        )
-
-class BorrowCreateView(CreateView):
-    model = Borrow
-    form_class = BorrowForm
-    template_name = 'borrow_form.html'
-    success_url = reverse_lazy('borrow-list')
-
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        return super().form_valid(form)
-
-class BorrowUpdateView(UpdateView):
-    model = Borrow
-    form_class = BorrowForm
-    template_name = 'borrow_form.html'
-    success_url = reverse_lazy('borrow-list')
-
-    def get_queryset(self):
-        return Borrow.objects.filter(user=self.request.user)
-
-class BorrowDeleteView(DeleteView):
-    model = Borrow
-    template_name = 'borrow_confirm_delete.html'
-    success_url = reverse_lazy('borrow-list')
-
-    def get_queryset(self):
-        return Borrow.objects.filter(user=self.request.user)
-
-# Review Views
-class ReviewListView(BaseListView):
-    model = Review
+# CRUD for Purchase
+class PurchaseListView(ListView):
+    model = Purchase
     template_name = 'review_list.html'
-    context_object_name = 'reviews'
+    context_object_name = 'purchases'
 
     def get_queryset(self):
-        return Review.objects.filter(user = self.request.user)
+        queryset = Purchase.objects.all()
+        search_query = self.request.GET.get('search')
+        if search_query:
+            queryset = queryset.filter(
+                Q(book__title__icontains=search_query) |
+                Q(user__username__icontains=search_query) |
+                Q(review__icontains=search_query)
+            )
+        return queryset
 
-    def apply_search(self, queryset, search_query):
-        return queryset.filter(
-            Q(book__title__icontains=search_query) |
-            Q(review_text__icontains=search_query)
-        )
 
-class ReviewCreateView(CreateView):
-    model = Review
-    form_class = ReviewForm
+class PurchaseDetailView(DetailView):
+    model = Purchase
+    template_name = 'review_detail.html'
+    context_object_name = 'purchase'
+    
+    def get_context_data(self, **kwargs):
+        context =  super().get_context_data(**kwargs)
+        context["student"] = Purchase.objects.filter(book = self.kwargs['pk'])
+        return context
+
+    
+
+class PurchaseCreateView(LoginRequiredMixin, CreateView):
+    model = Purchase
+    form_class = PurchaseForm
     template_name = 'review_form.html'
-    success_url = reverse_lazy('review-list')
+    success_url = reverse_lazy('purchase-list')
 
     def form_valid(self, form):
-        form.instance.user = self.request.user
+        form.instance.student = self.request.user  # Automatically set the student to the logged-in user
+        form.instance.make_purchase()  # Call any additional logic related to making a purchase
         return super().form_valid(form)
 
-class ReviewUpdateView(UpdateView):
-    model = Review
-    form_class = ReviewForm
+
+class PurchaseUpdateView(LoginRequiredMixin, UpdateView):
+    model = Purchase
+    form_class = PurchaseForm
     template_name = 'review_form.html'
-    success_url = reverse_lazy('review-list')
+    success_url = reverse_lazy('purchase-list')
 
-    def get_queryset(self):
-        return Review.objects.filter(user=self.request.user)
 
-class ReviewDeleteView(DeleteView):
-    model = Review
+class PurchaseDeleteView(LoginRequiredMixin, DeleteView):
+    model = Purchase
     template_name = 'review_confirm_delete.html'
-    success_url = reverse_lazy('review-list')
+    success_url = reverse_lazy('purchase-list')
+
+
+# CRUD for Wallet
+class WalletListView(ListView):
+    model = Wallet
+    template_name = 'borrow_list.html'
+    context_object_name = 'wallets'
 
     def get_queryset(self):
-        return Review.objects.filter(user=self.request.user)
+        queryset = Wallet.objects.all()
+        search_query = self.request.GET.get('search')
+        if search_query:
+            queryset = queryset.filter(
+                Q(user__username__icontains=search_query) |
+                Q(book__title__icontains=search_query)
+            )
+        return queryset
+
+
+class WalletDetailView(DetailView):
+    model = Wallet
+    template_name = 'borrow_detail.html'
+    context_object_name = 'wallet'
+
+    def get_object(self):
+        # Get the wallet object only if the user has made a purchase
+        wallet = get_object_or_404(Wallet, pk=self.kwargs['pk'], user=self.request.user)
+        if not self.request.user.purchase_set.exists():
+            raise PermissionDenied("You must make a purchase to view your wallet.")
+        return wallet
+
+
+
+class WalletUpdateView(LoginRequiredMixin, UpdateView):
+    model = Wallet
+    form_class = WalletForm
+    template_name = 'borrow_form.html'
+    success_url = reverse_lazy('wallet-list')
+    
+    
+    
+    
+    
+    
+    
+    
+    
+from django.urls import reverse_lazy
+from django.shortcuts import get_object_or_404, render, redirect
+from django.contrib.auth.decorators import login_required
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
+from .models import Payment, Purchase
+from .forms import PaymentForm
+
+# CRUD for Payment
+class PaymentListView(ListView):
+    model = Payment
+    template_name = 'payment_list.html'
+    context_object_name = 'payments'
+
+    def get_queryset(self):
+        queryset = Payment.objects.all()
+        search_query = self.request.GET.get('search')
+        if search_query:
+            queryset = queryset.filter(
+                Q(student__username__icontains=search_query) |
+                Q(purchase__book__title__icontains=search_query) |
+                Q(payment_method__icontains=search_query)
+            )
+        return queryset
+
+
+class PaymentCreateView(LoginRequiredMixin, CreateView):
+    model = Payment
+    form_class = PaymentForm
+    template_name = 'payment_form.html'
+    success_url = reverse_lazy('payment-list')
+
+    def form_valid(self, form):
+        form.instance.student = self.request.user  
+        if form.instance.status == 'completed':
+            pass
+        return super().form_valid(form)

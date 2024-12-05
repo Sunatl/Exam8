@@ -1,46 +1,39 @@
 from django.urls import path
-from . import views
+from .views import *
 
 urlpatterns = [
     # Home Page
-    path('Home', views.Base.as_view(), name='base'),
-    path('', views.Home.as_view(), name='home'),
+    path('Home', Base.as_view(), name='base'),
+    path('', Home.as_view(), name='home'),
+    path('logout/', user_logout, name='logout'),
+    path('login', login, name='login'),
 
-    # Author URLs
-    path('authors/', views.AuthorListView.as_view(), name='author-list'),
-    path('author/<int:pk>/', views.AuthorDetailView.as_view(), name='author-detail'),
-    path('author/create/', views.AuthorCreateView.as_view(), name='author-create'),
-    path('author/<int:pk>/update/', views.AuthorUpdateView.as_view(), name='author-update'),
-    path('author/<int:pk>/delete/', views.AuthorDeleteView.as_view(), name='author-delete'),
+    # URL-ҳои Grade
+    path('grades/', GradeListView.as_view(), name='grade-list'),
+    path('grades/create/', GradeCreateView.as_view(), name='grade-create'),
+    path('grades/<int:pk>/update/', GradeUpdateView.as_view(), name='grade-update'),
+    path('grades/<int:pk>/delete/', GradeDeleteView.as_view(), name='grade-delete'),
+    path('grades/<int:pk>/', GradeDetailView.as_view(), name='grade-detail'),  # Detail View
 
-    # Genre URLs
-    path('genres/', views.GenreListView.as_view(), name='genre-list'),
-    path('genre/<int:pk>/', views.GenreDetailView.as_view(), name='genre-detail'),
-    path('genre/create/', views.GenreCreateView.as_view(), name='genre-create'),
-    path('genre/<int:pk>/update/', views.GenreUpdateView.as_view(), name='genre-update'),
-    path('genre/<int:pk>/delete/', views.GenreDeleteView.as_view(), name='genre-delete'),
+    # URL-ҳои Book
+    path('books/', BookListView.as_view(), name='book-list'),
+    path('books/create/', BookCreateView.as_view(), name='book-create'),
+    path('books/<int:pk>/update/', BookUpdateView.as_view(), name='book-update'),
+    path('books/<int:pk>/delete/', BookDeleteView.as_view(), name='book-delete'),
+    path('books/<int:pk>/', BookDetailView.as_view(), name='book-detail'),  # Detail View
 
-    # Book URLs
-    path('books/', views.BookListView.as_view(), name='book-list'),
-    path('book/<int:pk>/', views.BookDetailView.as_view(), name='book-detail'),
-    path('book/create/', views.BookCreateView.as_view(), name='book-create'),
-    path('book/<int:pk>/update/', views.BookUpdateView.as_view(), name='book-update'),
-    path('book/<int:pk>/delete/', views.BookDeleteView.as_view(), name='book-delete'),
+    # URL-ҳои Purchase
+    path('purchases/', PurchaseListView.as_view(), name='purchase-list'),
+    path('purchases/create/', PurchaseCreateView.as_view(), name='purchase-create'),
+    path('purchases/<int:pk>/update/', PurchaseUpdateView.as_view(), name='purchase-update'),
+    path('purchases/<int:pk>/delete/', PurchaseDeleteView.as_view(), name='purchase-delete'),
+    path('purchases/<int:pk>/', PurchaseDetailView.as_view(), name='purchase-detail'),  # Detail View
 
-    # Borrow URLs
-    path('borrows/', views.BorrowListView.as_view(), name='borrow-list'),
-    path('borrow/create/', views.BorrowCreateView.as_view(), name='borrow-create'),
-    path('borrow/<int:pk>/update/', views.BorrowUpdateView.as_view(), name='borrow-update'),
-    path('borrow/<int:pk>/delete/', views.BorrowDeleteView.as_view(), name='borrow-delete'),
+    # URL-ҳои Wallet
+    path('wallets/', WalletListView.as_view(), name='wallet-list'),
+    path('wallets/<int:pk>/update/', WalletUpdateView.as_view(), name='wallet-update'),
+    path('wallets/<int:pk>/', WalletDetailView.as_view(), name='wallet-detail'),  # Detail View
+    path('payments/', PaymentListView.as_view(), name='payment-list'),
+    path('payments/new/', PaymentCreateView.as_view(), name='payment-create'),
 
-    # Review URLs
-    path('reviews/', views.ReviewListView.as_view(), name='review-list'),
-    path('review/create/', views.ReviewCreateView.as_view(), name='review-create'),
-    path('review/<int:pk>/update/', views.ReviewUpdateView.as_view(), name='review-update'),
-    path('review/<int:pk>/delete/', views.ReviewDeleteView.as_view(), name='review-delete'),
-
-    # Logout
-    path('logout/', views.user_logout, name='logout'),
-    path('login', views.login, name='login')
 ]
-

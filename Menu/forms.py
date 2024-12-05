@@ -1,49 +1,53 @@
 from django import forms
-from .models import *
+from .models import *  # Импорт кардани тамоми моделҳо
 
-class CustomUserForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput, required=False)
-
+# Формаи Grade
+class GradeForm(forms.ModelForm):
     class Meta:
-        model = CustomUser
-        fields = ['username', 'password', 'phone_number','email', 'address']
+        model = Grade
+        fields = ['name', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Номи синф'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Тавсифи иловагӣ'}),
+        }
 
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        if self.cleaned_data.get('password'):
-            user.set_password(self.cleaned_data['password'])  # Hash the password
-        if commit:
-            user.save()
-        return user
-    
-    
-
-class AuthorForm(forms.ModelForm):
+# Формаи Wallet (танҳо барои илова/кам кардани маблағ)
+class WalletForm(forms.ModelForm):
     class Meta:
-        model = Author
-        fields = ['name', 'biography', 'birth_date', 'death_date']
+        model = Wallet
+        fields = ['balance']
+        widgets = {
+            'balance': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Баланс'}),
+        }
 
-class GenreForm(forms.ModelForm):
-    class Meta:
-        model = Genre
-        fields = ['name']
-
+# Формаи Book
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
-        fields = ['title', 'description', 'author', 'genre', 'publication_date', 'cover_image', 'is_available']
+        fields = ['title', 'description', 'price', 'stock', 'is_available']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Номи китоб'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Тавсифи китоб'}),
+            'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Нарх'}),
+            'stock': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Шумораи саҳом'}),
+            'is_available': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
 
-    genre = forms.ModelMultipleChoiceField(
-        queryset=Genre.objects.all(),
-        widget=forms.CheckboxSelectMultiple
-    )
-
-class BorrowForm(forms.ModelForm):
+# Формаи Purchase
+class PurchaseForm(forms.ModelForm):
     class Meta:
-        model = Borrow
-        fields = [ 'book', 'return_date', 'is_returned']
+        model = Purchase
+        fields = [ 'book', 'quantity']
+        widgets = {
+            'student': forms.Select(attrs={'class': 'form-control'}),
+            'book': forms.Select(attrs={'class': 'form-control'}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Шумораи китоб'}),
+        }
 
-class ReviewForm(forms.ModelForm):
+# Формаи Payment
+class PaymentForm(forms.ModelForm):
     class Meta:
-        model = Review
-        fields = [ 'book', 'review_text', 'rating']
+        model = Payment
+        fields = ['payment_method','purchase','amount_paid','status']  # Роҳи пардохт
+
+
